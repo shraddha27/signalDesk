@@ -14,6 +14,12 @@ Then open `http://localhost:8000`. The first launch creates the database tables.
 
 The included `data/sample_accounts.csv` is fictional and can be imported to try the workflow. It is not part of the task dataset.
 
+## Render free demo
+
+The root `render.yaml` deploys a small demo using a free Render web service and free Render Postgres in Singapore. Select **New > Blueprint** in Render and connect this repository. Demo mode seeds the fictional `data/sample_accounts.csv` once and disables uploads. It is for demonstrating account search and scoring only; it cannot ingest the 16 GB Shodan file or run the separate worker.
+
+Render's free web service sleeps after inactivity and has ephemeral local storage. Its free Postgres database is limited to 1 GB and expires after 30 days. This public demo has no login, so it only uses fictional sample data. Do not upload real customer or prospect data. The full upload/worker pipeline requires a paid hosting design with durable shared/object storage and access control.
+
 ## What it does
 
 - Uploads large files to disk in chunks; CSV and JSONL rows are parsed one at a time and written in database batches.

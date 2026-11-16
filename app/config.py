@@ -22,3 +22,4 @@ INGEST_MAX_ATTEMPTS = int(os.getenv("INGEST_MAX_ATTEMPTS", "5"))
 INGEST_RETRY_BASE_SECONDS = int(os.getenv("INGEST_RETRY_BASE_SECONDS", "30"))
 INGEST_RETRY_MAX_SECONDS = int(os.getenv("INGEST_RETRY_MAX_SECONDS", "1800"))
 LOGFIRE_TOKEN = os.getenv("LOGFIRE_TOKEN")
+DEMO_MODE = os.getenv("DEMO_MODE", "false").casefold() == "true"

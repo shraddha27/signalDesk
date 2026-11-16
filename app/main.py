@@ -15,8 +15,9 @@ from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.agent_runtime import AccountAgentRuntime, build_account_plan
-from app.config import MAX_UPLOAD_BYTES, UPLOAD_TEMP_DIR
-from app.db import engine, get_db
+from app.config import DEMO_MODE, MAX_UPLOAD_BYTES, UPLOAD_TEMP_DIR
+from app.db import SessionLocal, engine, get_db
+from app.demo import seed_demo_accounts
 from app.ingestion import upload_format
 from app.ingestion_queue import enqueue_ingestion
 from app.models import Account, AgentRun, Base, IngestionJob
@@ -39,6 +40,12 @@ from app.schemas import (
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     """Create the MVP schema when the API starts."""
     Base.metadata.create_all(bind=engine)
+    if DEMO_MODE:
+        with SessionLocal() as db:
+            seed_demo_accounts(
+                db,
+                Path(__file__).parent.parent / "data" / "sample_accounts.csv",
+            )
     yield
 
 
@@ -61,6 +68,11 @@ def dashboard() -> FileResponse:
 @app.get("/api/health", response_model=HealthResponse)
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/config")
+def public_config() -> dict[str, bool]:
+    return {"demo_mode": DEMO_MODE, "uploads_enabled": not DEMO_MODE}
 
 
 def _account_json(account: Account) -> dict[str, Any]:
@@ -191,6 +203,11 @@ async def upload_ingestion(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
+    if DEMO_MODE:
+        raise HTTPException(
+            status_code=503,
+            detail="File uploads are disabled in the read-only hosted demo.",
+        )
     filename = Path(file.filename or "accounts.csv").name
     try:
         upload_format(filename)

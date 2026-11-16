@@ -29,10 +29,13 @@
             Turn company data into a clear, evidence-backed prospecting queue.
           </p>
         </div>
-        <label class="upload-button" for="file-input">
+        <label class="upload-button" for="file-input" id="upload-button" hidden>
           <span aria-hidden="true">↑</span> Import security data
           <input id="file-input" type="file" accept=".csv,.csv.gz,.csv.zst,.jsonl,.jsonl.gz,.jsonl.zst,.ndjson,.ndjson.gz,.ndjson.zst,.zst" />
         </label>
+        <p id="demo-notice" class="intro-copy" hidden>
+          Read-only demo with fictional sample accounts. File uploads are disabled.
+        </p>
       </section>
 
       <section class="metric-grid" aria-label="Account overview">

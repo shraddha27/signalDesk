@@ -23,6 +23,8 @@ const elements = {
   detail: document.querySelector("#account-detail"),
   ingestions: document.querySelector("#ingestion-list"),
   toast: document.querySelector("#toast"),
+  uploadButton: document.querySelector("#upload-button"),
+  demoNotice: document.querySelector("#demo-notice"),
 };
 
 function escapeHtml(value) {
@@ -113,6 +115,12 @@ async function loadOverview() {
     elements.industries.append(option);
   });
   return data.active_ingestions;
+}
+
+async function loadAppConfig() {
+  const config = await api("/api/config");
+  elements.uploadButton.hidden = !config.uploads_enabled;
+  elements.demoNotice.hidden = !config.demo_mode;
 }
 
 function renderAccounts(accounts) {
@@ -220,7 +228,8 @@ async function loadIngestions() {
 
 async function refreshDashboard() {
   try {
-    const [activeIngestions] = await Promise.all([
+    const [, activeIngestions] = await Promise.all([
+      loadAppConfig(),
       loadOverview(),
       loadAccounts(),
       loadIngestions(),
