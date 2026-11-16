@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7fb" />
+    <title>SignalDesk | Cybersecurity account intelligence</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="SignalDesk home">
+          <span class="brand-mark">S</span>
+          <span>signal<span class="brand-light">desk</span></span>
+        </a>
+        <div class="topbar-right">
+          <span class="live-dot"></span>
+          <span>Account intelligence</span>
+          <span class="avatar">SD</span>
+        </div>
+      </header>
+
+      <section class="intro">
+        <div>
+          <p class="eyebrow">CYBERSECURITY SALES · ACCOUNT DISCOVERY</p>
+          <h1>Find the right accounts.<br /><span>Start with the signal.</span></h1>
+          <p class="intro-copy">
+            Turn company data into a clear, evidence-backed prospecting queue.
+          </p>
+        </div>
+        <label class="upload-button" for="file-input">
+          <span aria-hidden="true">↑</span> Import security data
+          <input id="file-input" type="file" accept=".csv,.csv.gz,.csv.zst,.jsonl,.jsonl.gz,.jsonl.zst,.ndjson,.ndjson.gz,.ndjson.zst,.zst" />
+        </label>
+      </section>
+
+      <section class="metric-grid" aria-label="Account overview">
+        <article class="metric-card">
+          <div class="metric-label">ACCOUNTS TRACKED <span class="metric-icon">◎</span></div>
+          <div class="metric-value" id="total-accounts">—</div>
+          <div class="metric-note">Unique company records</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">HIGH PRIORITY <span class="metric-icon alert-icon">↗</span></div>
+          <div class="metric-value" id="high-priority">—</div>
+          <div class="metric-note">Score of 60 or higher</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">AVERAGE SIGNAL SCORE <span class="metric-icon">◈</span></div>
+          <div class="metric-value"><span id="average-score">—</span><small>/ 100</small></div>
+          <div class="metric-note">Heuristic, not buying probability</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">ACTIVE IMPORTS <span class="metric-icon">⟳</span></div>
+          <div class="metric-value" id="active-ingestions">—</div>
+          <div class="metric-note">Files being processed</div>
+        </article>
+      </section>
+
+      <section class="workspace">
+        <div class="accounts-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">PROSPECTING QUEUE</p>
+              <h2>Prioritized accounts <span class="count-pill" id="result-count">0</span></h2>
+            </div>
+            <button class="text-button" id="refresh-button" type="button">↻ Refresh</button>
+          </div>
+          <div class="filters">
+            <label class="search-box">
+              <span aria-hidden="true">⌕</span>
+              <input id="search-input" type="search" placeholder="Search company, domain, or industry" />
+            </label>
+            <select id="industry-filter" aria-label="Filter by industry">
+              <option value="">All industries</option>
+            </select>
+            <select id="tier-filter" aria-label="Filter by priority">
+              <option value="">All priorities</option>
+              <option value="high">High priority</option>
+              <option value="medium">Medium priority</option>
+              <option value="low">Low priority</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ACCOUNT</th>
+                  <th>INDUSTRY</th>
+                  <th>LOCATION</th>
+                  <th>EMPLOYEES</th>
+                  <th>LEADING SIGNAL</th>
+                  <th class="score-heading">SCORE</th>
+                </tr>
+              </thead>
+              <tbody id="account-rows"></tbody>
+            </table>
+            <div class="empty-state" id="empty-state">
+              <div class="empty-icon">⌕</div>
+              <h3>No accounts to show yet</h3>
+              <p>Import company data or a Shodan .zst scan to build your prospecting queue.</p>
+              <label class="secondary-button" for="file-input">Choose a data file</label>
+            </div>
+          </div>
+          <div class="pagination">
+            <span id="page-label">Showing 0 accounts</span>
+            <div>
+              <button class="page-button" id="previous-page" type="button" aria-label="Previous page">←</button>
+              <button class="page-button" id="next-page" type="button" aria-label="Next page">→</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="side-column">
+          <section class="panel detail-panel" id="detail-panel">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">ACCOUNT INTELLIGENCE</p>
+                <h2>Signal breakdown</h2>
+              </div>
+              <span class="detail-symbol">⌁</span>
+            </div>
+            <div id="account-detail" class="detail-placeholder">
+              <span class="detail-target">◎</span>
+              <p>Select an account to see what drove its score.</p>
+            </div>
+          </section>
+          <section class="panel imports-panel">
+            <div class="panel-heading compact-heading">
+              <div>
+                <p class="eyebrow">DATA PIPELINE</p>
+                <h2>Recent imports</h2>
+              </div>
+              <span class="pipeline-symbol">▤</span>
+            </div>
+            <div id="ingestion-list" class="ingestion-list">
+              <p class="detail-placeholder">No imports yet.</p>
+            </div>
+          </section>
+          <div class="method-note">
+            <span>ⓘ</span>
+            <p><strong>Evidence over guesswork.</strong> Scores surface observable risk and fit signals from your data. They are prioritization cues, not predictions.</p>
+          </div>
+        </aside>
+      </section>
+      <footer>SignalDesk · Explainable account prioritization</footer>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

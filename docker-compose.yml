@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sales_intelligence
+      POSTGRES_USER: sales
+      POSTGRES_PASSWORD: sales
+    ports:
+      - "5432:5432"
+    volumes:
+      - "${SIGNALDESK_POSTGRES_DIR:-./docker-data/postgres}:/var/lib/postgresql/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sales -d sales_intelligence"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://sales:sales@db:5432/sales_intelligence
+      MAX_UPLOAD_BYTES: 17179869184
+      INGEST_BATCH_SIZE: 1000
+      INGEST_INBOX_DIR: /uploads/inbox
+      INGEST_POLL_SECONDS: 2
+      INGEST_MAX_ATTEMPTS: 5
+      UPLOAD_TEMP_DIR: /uploads
+      TMPDIR: /uploads
+      LOGFIRE_TOKEN: ${LOGFIRE_TOKEN:-}
+    ports:
+      - "8000:8000"
+    volumes:
+      - "${SIGNALDESK_UPLOAD_DIR:-./docker-data/uploads}:/uploads"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build: .
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://sales:sales@db:5432/sales_intelligence
+      INGEST_BATCH_SIZE: 1000
+      INGEST_PROFILE_BATCHES: 10
+      INGEST_INBOX_DIR: /uploads/inbox
+      INGEST_POLL_SECONDS: 2
+      INGEST_MAX_ATTEMPTS: 5
+      INGEST_LEASE_SECONDS: 1800
+      INGEST_RETRY_BASE_SECONDS: 30
+      INGEST_RETRY_MAX_SECONDS: 1800
+      UPLOAD_TEMP_DIR: /uploads
+      TMPDIR: /uploads
+    volumes:
+      - "${SIGNALDESK_UPLOAD_DIR:-./docker-data/uploads}:/uploads"
+    depends_on:
+      app:
+        condition: service_healthy
